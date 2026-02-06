@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  storage-service:
+    build:
+      context: .
+      dockerfile: services/storage/src/Board.StorageService.WebApi/Dockerfile
+    container_name: board-storage-service
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=storage-db;Port=5432;Database=BoardStorage;Username=postgres;Password=postgres
+      - ASPNETCORE_WEBROOT=/app/uploads
+    depends_on:
+      - storage-db
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  storage-db:
+    image: postgres:16-alpine
+    container_name: board-storage-db
+    environment:
+      - POSTGRES_DB=BoardStorage
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - storage-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  storage-data:
