@@ -48,7 +48,7 @@ public class MessageController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new ErrorApiResponse(ex.ParamName, 400));
+            return BadRequest(new ErrorApiResponse(ex.Message, 400));
         }
         catch (Exception ex)
         {
@@ -76,7 +76,7 @@ public class MessageController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new ErrorApiResponse(ex.ParamName, 400));
+            return BadRequest(new ErrorApiResponse(ex.Message, 400));
         }
         catch (Exception ex)
         {
@@ -105,7 +105,7 @@ public class MessageController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new ErrorApiResponse(ex.ParamName, 400));
+            return BadRequest(new ErrorApiResponse(ex.Message, 400));
         }
         catch (Exception ex)
         {
@@ -133,7 +133,7 @@ public class MessageController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new ErrorApiResponse(ex.ParamName, 400));
+            return BadRequest(new ErrorApiResponse(ex.Message, 400));
         }
         catch (Exception ex)
         {

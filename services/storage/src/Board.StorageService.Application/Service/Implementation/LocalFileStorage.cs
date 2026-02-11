@@ -35,7 +35,7 @@ public class LocalFileStorage : IFileStorage
         }
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            throw new ArgumentException("File name cannot be empty", nameof(fileName));
+            throw new ArgumentException("File name cannot be null or empty");
         }
         if (!Directory.Exists(_savePathFolder))
         {

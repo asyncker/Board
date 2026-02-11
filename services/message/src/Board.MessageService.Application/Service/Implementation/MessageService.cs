@@ -24,9 +24,9 @@ public class MessageService : IMessageService
     /// <returns></returns>
     public async Task WriteAsync(CreateMessageDto createMessageDto)
     {
-        if (createMessageDto?.GroupName == null)
+        if (string.IsNullOrEmpty(createMessageDto?.GroupName))
         {
-            throw new ArgumentNullException("Group name cannot be null");
+            throw new ArgumentException("Group name cannot be null or empty");
         }
         Group group = await _context.Groups.FirstOrDefaultAsync(x => x.Name == createMessageDto.GroupName);
         if (group == null)
@@ -64,9 +64,9 @@ public class MessageService : IMessageService
     /// <returns></returns>
     public async Task<GroupResultDto> GetPageAsync(string groupName, int page)
     {
-        if (groupName == null)
+        if (string.IsNullOrEmpty(groupName))
         {
-            throw new ArgumentNullException("Group name cannot be null");
+            throw new ArgumentException("Group name cannot be null or empty");
         }
         Group group = await _context.Groups
             .AsNoTracking()
@@ -108,9 +108,9 @@ public class MessageService : IMessageService
     /// <returns></returns>
     public async Task<int> GetCurrentPageAsync(string groupName)
     {
-        if (groupName == null)
+        if (string.IsNullOrEmpty(groupName))
         {
-            throw new ArgumentNullException("Group name cannot be null");
+            throw new ArgumentException("Group name cannot be null or empty");
         }
         Group group = await _context.Groups
             .AsNoTracking()
@@ -133,9 +133,9 @@ public class MessageService : IMessageService
     /// <returns></returns>
     public async Task<long> CreateGroupAsync(CreateGroupDto groupDto)
     {
-        if (groupDto?.Name == null)
+        if (string.IsNullOrEmpty(groupDto?.Name))
         {
-            throw new ArgumentNullException("Group name cannot be null");
+            throw new ArgumentException("Group name cannot be null or empty");
         }
         if (!System.Text.RegularExpressions.Regex.IsMatch(groupDto.Name, @"^[a-zA-Z0-9_]+$"))
         {

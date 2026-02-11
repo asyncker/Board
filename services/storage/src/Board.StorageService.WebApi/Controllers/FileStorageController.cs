@@ -30,18 +30,22 @@ public class FileStorageController : ControllerBase
     /// <returns>URL загруженного файла</returns>
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
-    public async Task<ActionResult<string>> UploadFileAsync(IFormFile file)
+    public async Task<ActionResult<string>> UploadFileAsync(IFormFile? file)
     {
         try
         {
-            string storageFileName = await _fileStorage.SaveFileAsync(file.OpenReadStream(), file.FileName, file.ContentType);
+            string storageFileName = await _fileStorage.SaveFileAsync(file?.OpenReadStream(), file?.FileName, file?.ContentType);
             var request = _httpContextAccessor.HttpContext?.Request;
             string fileUrl = $"{request?.Scheme}://{request?.Host}{request?.PathBase}/api/v1/files/{storageFileName}";
             return Ok(fileUrl);
         }
-        catch (ArgumentException ex)
+        catch (ArgumentNullException ex)
         {
             return BadRequest(new ErrorApiResponse(ex.ParamName, 400));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ErrorApiResponse(ex.Message, 400));
         }
         catch (Exception ex)
         {
