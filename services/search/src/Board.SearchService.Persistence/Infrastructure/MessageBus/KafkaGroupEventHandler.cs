@@ -8,6 +8,9 @@ using System.Text.Json;
 
 namespace Board.SearchService.Persistence.Infrastructure.MessageBus;
 
+/// <summary>
+/// Обрабатывает события, такие как GroupCreated, и обновляет индекс поиска Elasticsearch
+/// </summary>
 public class KafkaGroupEventHandler : BackgroundService
 {
     private readonly string _topicName;
@@ -25,6 +28,11 @@ public class KafkaGroupEventHandler : BackgroundService
         _topicName = configuration["Kafka:GroupEventsTopic"] ?? "group-topic";
     }
 
+    /// <summary>
+    /// Выполняет фоновую задачу, подписываясь на сообщение от Kafka
+    /// </summary>
+    /// <param name="stoppingToken"></param>
+    /// <returns></returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield();
@@ -81,7 +89,7 @@ public class KafkaGroupEventHandler : BackgroundService
         switch (groupEvent.Action)
         {
             case "GroupCreated":
-                await _elasticsearchRepository.CreateGroupAsync(new Domain.Search.ElasticGroup()
+                await _elasticsearchRepository.CreateOrUpdateGroupAsync(new Domain.Search.ElasticGroup()
                 {
                     Id = groupEvent.Data.GroupId,
                     Name = groupEvent.Data.Name,

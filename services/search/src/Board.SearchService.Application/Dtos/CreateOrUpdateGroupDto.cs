@@ -1,6 +1,6 @@
 ﻿namespace Board.SearchService.Application.Dtos;
 
-public class CreateGroupDto
+public class CreateOrUpdateGroupDto
 {
     public long Id { get; set; }
     public string Name { get; set; }

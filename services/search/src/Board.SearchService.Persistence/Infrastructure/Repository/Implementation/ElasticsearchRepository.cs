@@ -5,6 +5,9 @@ using Elastic.Transport.Products.Elasticsearch;
 
 namespace Board.SearchService.Persistence.Infrastructure.Repository.Implementation;
 
+/// <summary>
+/// Репозиторий для выполнения поисковых операций в Elasticsearch
+/// </summary>
 public class ElasticsearchRepository : IElasticsearchRepository
 {
     private readonly ElasticsearchClient _elasticClient;
@@ -13,6 +16,11 @@ public class ElasticsearchRepository : IElasticsearchRepository
         _elasticClient = elasticClient;
     }
 
+    /// <summary>
+    /// Поиск групп по названию или титулу с использованием поиска
+    /// </summary>
+    /// <param name="searchTerm"></param>
+    /// <returns></returns>
     public async Task<IEnumerable<ElasticGroup>> SearchGroupsAsync(string searchTerm)
     {
         SearchResponse<ElasticGroup> response = await _elasticClient.SearchAsync<ElasticGroup>(s => s
@@ -42,7 +50,13 @@ public class ElasticsearchRepository : IElasticsearchRepository
         return Enumerable.Empty<ElasticGroup>();
     }
 
-    public async Task CreateGroupAsync(ElasticGroup elasticGroup)
+    /// <summary>
+    /// Создаёт или обновляет групповой документ в индексе Elasticsearch
+    /// </summary>
+    /// <param name="elasticGroup"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task CreateOrUpdateGroupAsync(ElasticGroup elasticGroup)
     {
         IndexResponse response = await _elasticClient.IndexAsync(
             elasticGroup,

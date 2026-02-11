@@ -13,6 +13,11 @@ public class ElasticSearchService : ISearchService
         _elasticRepository = elasticRepository;
     }
 
+    /// <summary>
+    /// Поиск групп по name, title
+    /// </summary>
+    /// <param name="searchTerm"></param>
+    /// <returns></returns>
     public async Task<IEnumerable<GroupDto>> SearchGroupsAsync(string searchTerm)
     {
         IEnumerable<ElasticGroup> groups = await _elasticRepository.SearchGroupsAsync(searchTerm);
@@ -26,7 +31,12 @@ public class ElasticSearchService : ISearchService
         });
     }
 
-    public async Task CreateGroupAsync(CreateGroupDto groupDto)
+    /// <summary>
+    /// Создает или обновляет группу
+    /// </summary>
+    /// <param name="groupDto"></param>
+    /// <returns></returns>
+    public async Task CreateOrUpdateGroupAsync(CreateOrUpdateGroupDto groupDto)
     {
         ElasticGroup elasticGroup = new()
         {
@@ -36,6 +46,6 @@ public class ElasticSearchService : ISearchService
             Description = groupDto.Description,
             AvatarUrl = groupDto.AvatarUrl
         };
-        await _elasticRepository.CreateGroupAsync(elasticGroup);
+        await _elasticRepository.CreateOrUpdateGroupAsync(elasticGroup);
     }
 }

@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.MessageService.Applic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.MessageService.Persistence", "services\message\src\Board.MessageService.Persistence\Board.MessageService.Persistence.csproj", "{09FC3D79-BE6D-44DC-8FE5-DDE2BF4550D7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.MessageService.Application.Tests", "services\message\tests\Board.MessageService.Application.Tests\Board.MessageService.Application.Tests.csproj", "{180CB812-512A-47D6-B96E-B894E81BC1AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.MessageService.Application.Tests", "services\message\test\Board.MessageService.Application.Tests\Board.MessageService.Application.Tests.csproj", "{180CB812-512A-47D6-B96E-B894E81BC1AE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.IdentityService.WebApi", "services\identity\src\Board.IdentityService.WebApi\Board.IdentityService.WebApi.csproj", "{88BFE3B0-594C-4B35-8883-42F689D92826}"
 EndProject
