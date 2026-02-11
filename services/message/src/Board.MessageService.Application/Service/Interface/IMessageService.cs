@@ -34,5 +34,5 @@ public interface IMessageService
     /// </summary>
     /// <param name="groupDto"></param>
     /// <returns></returns>
-    Task CreateGroupAsync(CreateGroupDto groupDto);
+    Task<long> CreateGroupAsync(CreateGroupDto groupDto);
 }

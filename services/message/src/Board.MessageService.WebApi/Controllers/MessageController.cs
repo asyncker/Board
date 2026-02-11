@@ -1,5 +1,6 @@
 using Board.MessageService.Application.Dtos;
 using Board.MessageService.Application.Service.Interface;
+using Board.MessageService.Persistence.Infrastructure.MessageBus;
 using Board.MessageService.WebApi.Response;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +15,14 @@ public class MessageController : ControllerBase
 {
     private readonly ILogger<MessageController> _logger;
     private readonly IMessageService _messageService;
+    private readonly IKafkaGroupEventProducer _kafkaGroupEventProducer;
     public MessageController(ILogger<MessageController> logger,
-        IMessageService messageService)
+        IMessageService messageService,
+        IKafkaGroupEventProducer kafkaGroupEventProducer)
     {
         _logger = logger;
         _messageService = messageService;
+        _kafkaGroupEventProducer = kafkaGroupEventProducer;
     }
 
     /// <summary>
@@ -27,11 +31,19 @@ public class MessageController : ControllerBase
     /// <param name="group"></param>
     /// <returns></returns>
     [HttpPost("createGroup")]
-    public async Task<ActionResult> CreateGroup(CreateGroupDto group)
+    public async Task<ActionResult> CreateGroup(CreateGroupDto group, CancellationToken cancellationToken = default)
     {
         try
         {
-            await _messageService.CreateGroupAsync(group);
+            long id = await _messageService.CreateGroupAsync(group);
+            await _kafkaGroupEventProducer.ProduceCreateEventAsync(new Persistence.Domain.Events.GroupEventData()
+            {
+                GroupId = id,
+                Name = group.Name,
+                Title = group.Title,
+                Description = group.Description,
+                AvatarUrl = group.AvatarUrl
+            }, cancellationToken);
             return Ok(new SuccessApiResponse<string>("Group success create"));
         }
         catch (ArgumentException ex)

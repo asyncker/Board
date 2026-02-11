@@ -43,7 +43,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.IdentityService.Persi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.IdentityService.Application", "services\identity\src\Board.IdentityService.Application\Board.IdentityService.Application.csproj", "{C41D2B44-DCFA-4AD3-9295-867FC94382CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Board.IdentityService.Application.Tests", "services\identity\test\Board.IdentityService.Application.Tests\Board.IdentityService.Application.Tests.csproj", "{AFC5AF88-0593-4A48-8061-BD45AC922AAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.IdentityService.Application.Tests", "services\identity\test\Board.IdentityService.Application.Tests\Board.IdentityService.Application.Tests.csproj", "{AFC5AF88-0593-4A48-8061-BD45AC922AAA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "search", "search", "{F1CD18C9-8FFF-42D7-93A9-94899C7BB902}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{811E8160-B024-48CD-A420-B72DDDEAB6EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{080FF18C-E383-4D5A-A798-818538A3D374}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.SearchService.WebApi", "services\search\src\Board.SearchService.WebApi\Board.SearchService.WebApi.csproj", "{F28933C8-595A-4909-823B-16DB4912AE87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.SearchService.Application", "services\search\src\Board.SearchService.Application\Board.SearchService.Application.csproj", "{B6D8AD13-73CB-4E21-9057-2C7F278DAB4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Board.SearchService.Persistence", "services\search\src\Board.SearchService.Persistence\Board.SearchService.Persistence.csproj", "{F7BC0D78-087B-4A4E-9AD0-639F695D2E3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +111,18 @@ Global
 		{AFC5AF88-0593-4A48-8061-BD45AC922AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFC5AF88-0593-4A48-8061-BD45AC922AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFC5AF88-0593-4A48-8061-BD45AC922AAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F28933C8-595A-4909-823B-16DB4912AE87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F28933C8-595A-4909-823B-16DB4912AE87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F28933C8-595A-4909-823B-16DB4912AE87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F28933C8-595A-4909-823B-16DB4912AE87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6D8AD13-73CB-4E21-9057-2C7F278DAB4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6D8AD13-73CB-4E21-9057-2C7F278DAB4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6D8AD13-73CB-4E21-9057-2C7F278DAB4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6D8AD13-73CB-4E21-9057-2C7F278DAB4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7BC0D78-087B-4A4E-9AD0-639F695D2E3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7BC0D78-087B-4A4E-9AD0-639F695D2E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7BC0D78-087B-4A4E-9AD0-639F695D2E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7BC0D78-087B-4A4E-9AD0-639F695D2E3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +146,11 @@ Global
 		{F560BB57-97A8-4E0B-AC94-A7A53C680FEF} = {1225C808-A28F-44BF-B102-1227E44F8ECE}
 		{C41D2B44-DCFA-4AD3-9295-867FC94382CC} = {1225C808-A28F-44BF-B102-1227E44F8ECE}
 		{AFC5AF88-0593-4A48-8061-BD45AC922AAA} = {7D720FBB-6DE8-4018-A570-8A7E49C5726E}
+		{811E8160-B024-48CD-A420-B72DDDEAB6EE} = {F1CD18C9-8FFF-42D7-93A9-94899C7BB902}
+		{080FF18C-E383-4D5A-A798-818538A3D374} = {F1CD18C9-8FFF-42D7-93A9-94899C7BB902}
+		{F28933C8-595A-4909-823B-16DB4912AE87} = {811E8160-B024-48CD-A420-B72DDDEAB6EE}
+		{B6D8AD13-73CB-4E21-9057-2C7F278DAB4C} = {811E8160-B024-48CD-A420-B72DDDEAB6EE}
+		{F7BC0D78-087B-4A4E-9AD0-639F695D2E3F} = {811E8160-B024-48CD-A420-B72DDDEAB6EE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {611101DC-8012-4F83-9A88-06FFFB5585B3}

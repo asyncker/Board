@@ -131,7 +131,7 @@ public class MessageService : IMessageService
     /// </summary>
     /// <param name="groupDto"></param>
     /// <returns></returns>
-    public async Task CreateGroupAsync(CreateGroupDto groupDto)
+    public async Task<long> CreateGroupAsync(CreateGroupDto groupDto)
     {
         if (groupDto?.Name == null)
         {
@@ -148,13 +148,15 @@ public class MessageService : IMessageService
         {
             throw new ArgumentException("Group is exist");
         }
-        await _context.Groups.AddAsync(new Group()
+        Group newGroup = new()
         {
             Name = groupDto.Name,
             Description = groupDto.Description,
             AvatarUrl = groupDto.AvatarUrl,
             Title = groupDto.Title
-        });
+        };
+        await _context.Groups.AddAsync(newGroup);
         await _context.SaveChangesAsync();
+        return newGroup.Id;
     }
 }
