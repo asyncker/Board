@@ -1,0 +1,7 @@
+﻿namespace Board.IdentityService.Application.Dtos;
+
+public class RefreshTokenRequestDto
+{
+    public string Token { get; set; }
+    public string RefreshToken { get; set; }
+}

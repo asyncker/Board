@@ -1,0 +1,264 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: board-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD-SHELL", "echo stat | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: board-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:29092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+  kafka-init-topics:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: board-kafka-init-topics
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+      echo 'Waiting for Kafka to be ready...' &&
+      sleep 5 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic group-topic --partitions 1 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic message-topic --partitions 1 --replication-factor 1 &&
+      echo 'Topics created successfully' &&
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
+    restart: on-failure
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: board-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "logger.org.elasticsearch=warn"
+      - "logger.org.apache.http=warn"
+      - xpack.security.enrollment.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -f http://localhost:9200 > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      kafka-init-topics:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  search-service:
+    build:
+      context: .
+      dockerfile: services/search/src/Board.SearchService.WebApi/Dockerfile
+    container_name: board-search-service
+    ports:
+      - "8090:8080"
+      - "8091:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Elasticsearch__Uri=http://elasticsearch:9200
+      - Elasticsearch__DefaultIndex=app-index
+      - Elasticsearch__IsDebug=true
+      - Kafka__BootstrapServers=kafka:29092
+      - Kafka__GroupId=elasticsearch-consumer-group
+      - Kafka__GroupEventsTopic=group-topic
+      - Kafka__MessageEventsTopic=message-topic
+      - Kafka__AutoOffsetReset=Earliest
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  storage-service:
+    build:
+      context: .
+      dockerfile: services/storage/src/Board.StorageService.WebApi/Dockerfile
+    container_name: board-storage-service
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=storage-db;Port=5432;Database=BoardStorage;Username=postgres;Password=postgres
+      - ASPNETCORE_WEBROOT=/app/uploads
+    depends_on:
+      storage-db:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  message-service:
+    build:
+      context: .
+      dockerfile: services/message/src/Board.MessageService.WebApi/Dockerfile
+    container_name: board-message-service
+    ports:
+      - "8070:8080"
+      - "8071:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=message-db;Port=5432;Database=BoardMessages;Username=postgres;Password=postgres
+      - Kafka__BootstrapServers=kafka:29092
+      - Kafka__GroupId=message-service-group
+      - Kafka__MessageEventsTopic=message-topic
+      - Kafka__GroupEventsTopic=group-topic
+      - Kafka__AutoOffsetReset=Latest
+    depends_on:
+      message-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: services/identity/src/Board.IdentityService.WebApi/Dockerfile
+    container_name: board-identity-service
+    ports:
+      - "8060:8080"
+      - "8061:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=identity-db;Port=5432;Database=BoardIdentityUser;Username=postgres;Password=postgres
+      - Jwt__Secret=InsertOtherSuperSecretKeyWithAtLeast16Characters
+      - Jwt__ExpiresMinutes=60
+      - Jwt__RefreshTokenExpiresDays=7
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  public-gateway:
+    build:
+      context: .
+      dockerfile: gateways/public/src/Board.PublicGateway/Dockerfile
+    container_name: board-public-gateway
+    ports:
+      - "5180:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTP_PORTS=8080
+    depends_on:
+      identity-service:
+        condition: service_started
+      storage-service:
+        condition: service_started
+      message-service:
+        condition: service_started
+      search-service:
+        condition: service_started
+    volumes:
+      - ./gateways/public/src/Board.PublicGateway/ocelot.Docker.json:/app/ocelot.json:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  storage-db:
+    image: postgres:16-alpine
+    container_name: board-storage-db
+    environment:
+      - POSTGRES_DB=BoardStorage
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - storage-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  message-db:
+    image: postgres:16-alpine
+    container_name: board-message-db
+    environment:
+      - POSTGRES_DB=BoardMessages
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - message-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  identity-db:
+    image: postgres:16-alpine
+    container_name: board-identity-db
+    environment:
+      - POSTGRES_DB=BoardIdentityUser
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  storage-data:
+  message-data:
+  identity-data:
+  elasticsearch-data:
