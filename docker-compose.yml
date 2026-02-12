@@ -157,6 +157,52 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
 
+  identity-service:
+    build:
+      context: .
+      dockerfile: services/identity/src/Board.IdentityService.WebApi/Dockerfile
+    container_name: board-identity-service
+    ports:
+      - "8060:8080"
+      - "8061:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=identity-db;Port=5432;Database=BoardIdentityUser;Username=postgres;Password=postgres
+      - Jwt__Secret=InsertOtherSuperSecretKeyWithAtLeast16Characters
+      - Jwt__ExpiresMinutes=60
+      - Jwt__RefreshTokenExpiresDays=7
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  public-gateway:
+    build:
+      context: .
+      dockerfile: gateways/public/src/Board.PublicGateway/Dockerfile
+    container_name: board-public-gateway
+    ports:
+      - "5180:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTP_PORTS=8080
+    depends_on:
+      identity-service:
+        condition: service_started
+      storage-service:
+        condition: service_started
+      message-service:
+        condition: service_started
+      search-service:
+        condition: service_started
+    volumes:
+      - ./gateways/public/src/Board.PublicGateway/ocelot.Docker.json:/app/ocelot.json:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+
   storage-db:
     image: postgres:16-alpine
     container_name: board-storage-db
@@ -193,7 +239,26 @@ services:
       retries: 10
     restart: unless-stopped
 
+  identity-db:
+    image: postgres:16-alpine
+    container_name: board-identity-db
+    environment:
+      - POSTGRES_DB=BoardIdentityUser
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
 volumes:
   storage-data:
   message-data:
+  identity-data:
   elasticsearch-data:

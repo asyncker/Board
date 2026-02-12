@@ -24,11 +24,11 @@ public class SearchController : ControllerBase
     /// <param name="terms"></param>
     /// <returns></returns>
     [HttpGet("group")]
-    public async Task<ActionResult> Group(string terms)
+    public async Task<ActionResult> Group(string? terms)
     {
         try
         {
-            IEnumerable<GroupDto> groups = await _searchService.SearchGroupsAsync(terms);
+            IEnumerable<GroupDto> groups = await _searchService.SearchGroupsAsync(terms ?? string.Empty);
             return Ok(new SuccessApiResponse<IEnumerable<GroupDto>>(groups));
         }
         catch (Exception ex)
