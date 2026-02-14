@@ -34,6 +34,8 @@ public class AppDbContext : DbContext
 
             entity.Property(m => m.UserNameColor)
                 .HasMaxLength(10);
+
+            entity.HasIndex(m => new { m.GroupId, m.CreatedUtcAt });
         });
 
         modelBuilder.Entity<Group>(entity =>

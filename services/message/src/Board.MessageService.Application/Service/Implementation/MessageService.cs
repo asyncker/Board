@@ -75,28 +75,29 @@ public class MessageService : IMessageService
         {
             throw new KeyNotFoundException("Group/page not found");
         }
-        List<Message> messages = await _context.Messages
+        List<MessageDto> messages = await _context.Messages
             .AsNoTracking()
             .Where(x => x.GroupId == group.Id)
-            .OrderBy(x => x.Id)
+            .OrderBy(x => x.CreatedUtcAt)
             .Include(x => x.Attachments)
             .Skip(page * 100)
             .Take(100)
+            .Select(x => new MessageDto()
+            {
+                Id = x.Id,
+                Text = x.Text,
+                UserAvatarUrl = x.UserAvatarUrl,
+                UserName = x.UserName,
+                UserNameColor = x.UserNameColor,
+                Attachments = x.Attachments.Select(a => a.Url)
+            })
             .ToListAsync();
         GroupResultDto groupResultDto = new()
         {
             Name = groupName,
             Title = group.Title,
             Description = group.Description,
-            Messages = messages.Select(message => new MessageDto()
-            {
-                Id = message.Id,
-                Text = message.Text,
-                UserAvatarUrl = message.UserAvatarUrl,
-                UserName = message.UserName,
-                UserNameColor = message.UserNameColor,
-                Attachments = message.Attachments.Select(x => x.Url).ToList()
-            }).ToList()
+            Messages = messages
         };
         return groupResultDto;
     }
