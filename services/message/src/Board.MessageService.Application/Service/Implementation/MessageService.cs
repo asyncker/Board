@@ -89,6 +89,7 @@ public class MessageService : IMessageService
                 UserAvatarUrl = x.UserAvatarUrl,
                 UserName = x.UserName,
                 UserNameColor = x.UserNameColor,
+                CreatedUtcAt = x.CreatedUtcAt,
                 Attachments = x.Attachments.Select(a => a.Url)
             })
             .ToListAsync();

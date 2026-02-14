@@ -7,5 +7,6 @@ public class MessageDto
     public string UserName { get; set; }
     public string UserNameColor { get; set; }
     public string? UserAvatarUrl { get; set; }
+    public DateTime CreatedUtcAt { get; set; }
     public IEnumerable<string> Attachments { get; set; } = Enumerable.Empty<string>();
 }
