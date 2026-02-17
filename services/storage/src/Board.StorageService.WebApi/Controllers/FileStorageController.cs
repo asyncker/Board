@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Board.StorageService.WebApi.Controllers;
 
 /// <summary>
-/// Сервис для создания файлов
+/// РЎРµСЂРІРёСЃ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ С„Р°Р№Р»РѕРІ
 /// </summary>
 [ApiController]
 [Route("api/v1/files")]
@@ -24,10 +24,10 @@ public class FileStorageController : ControllerBase
     }
 
     /// <summary>
-    /// Загрузить файл и получить ссылку
+    /// Р—Р°РіСЂСѓР·РёС‚СЊ С„Р°Р№Р» Рё РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ
     /// </summary>
     /// <param name="file"></param>
-    /// <returns>URL загруженного файла</returns>
+    /// <returns>URL Р·Р°РіСЂСѓР¶РµРЅРЅРѕРіРѕ С„Р°Р№Р»Р°</returns>
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<string>> UploadFileAsync(IFormFile? file)
@@ -55,7 +55,7 @@ public class FileStorageController : ControllerBase
     }
 
     /// <summary>
-    /// Получить файл по названию
+    /// РџРѕР»СѓС‡РёС‚СЊ С„Р°Р№Р» РїРѕ РЅР°Р·РІР°РЅРёСЋ
     /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
