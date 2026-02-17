@@ -19,7 +19,7 @@ public class SearchController : ControllerBase
     }
 
     /// <summary>
-    /// Поиск по группе
+    /// РџРѕРёСЃРє РїРѕ РіСЂСѓРїРїРµ
     /// </summary>
     /// <param name="terms"></param>
     /// <returns></returns>

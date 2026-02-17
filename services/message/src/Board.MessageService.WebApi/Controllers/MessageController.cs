@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Board.MessageService.WebApi.Controllers;
 
 /// <summary>
-/// Сервис для создания сообщений
+/// РЎРµСЂРІРёСЃ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРѕРѕР±С‰РµРЅРёР№
 /// </summary>
 [ApiController]
 [Route("api/v1/message")]
@@ -26,7 +26,7 @@ public class MessageController : ControllerBase
     }
 
     /// <summary>
-    /// Создать группу
+    /// РЎРѕР·РґР°С‚СЊ РіСЂСѓРїРїСѓ
     /// </summary>
     /// <param name="group"></param>
     /// <returns></returns>
@@ -58,7 +58,7 @@ public class MessageController : ControllerBase
     }
 
     /// <summary>
-    /// Создать сообщение в группе
+    /// РЎРѕР·РґР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІ РіСЂСѓРїРїРµ
     /// </summary>
     /// <param name="message"></param>
     /// <returns></returns>
@@ -86,7 +86,7 @@ public class MessageController : ControllerBase
     }
 
     /// <summary>
-    /// Получить 100 записей от группы
+    /// РџРѕР»СѓС‡РёС‚СЊ 100 Р·Р°РїРёСЃРµР№ РѕС‚ РіСЂСѓРїРїС‹
     /// </summary>
     /// <param name="group"></param>
     /// <param name="page"></param>
@@ -115,7 +115,7 @@ public class MessageController : ControllerBase
     }
 
     /// <summary>
-    /// Получить текущую страницу от группы
+    /// РџРѕР»СѓС‡РёС‚СЊ С‚РµРєСѓС‰СѓСЋ СЃС‚СЂР°РЅРёС†Сѓ РѕС‚ РіСЂСѓРїРїС‹
     /// </summary>
     /// <param name="group"></param>
     /// <returns></returns>
