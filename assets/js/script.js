@@ -9,6 +9,26 @@ let isLoading = false;
 let isSending = false;
 let cacheGroup = {};
 const messagesContainer = document.getElementById('messages');
+const messageInput = document.getElementById('messageInput');
+
+function autoResizeTextarea() {
+    const textarea = messageInput;
+    textarea.style.height = 'auto';
+    const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight) || 20;
+    const maxHeight = lineHeight * 6;
+    textarea.style.height = Math.min(textarea.scrollHeight + 2, maxHeight) + 'px';
+}
+
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.shiftKey) {
+        autoResizeTextarea();
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('sendBtn').click();
+    }
+});
+
+messageInput.addEventListener('input', autoResizeTextarea);
 
 function getColorBySeed(seed, minColor = 100, maxColor = 256) {
   let hash = 2166136261;
@@ -28,7 +48,7 @@ function getColorBySeed(seed, minColor = 100, maxColor = 256) {
 function addGroupToHistory(groupName, groupTitle, groupAvatarUrl = '', isUpMessage = false) {
   try {
     const group = { Name: groupName, Title: groupTitle, AvatarUrl: groupAvatarUrl };
-    let groupHistory = JSON.parse(localStorage.getItem("groupHistory") || "[]");
+    let groupHistory = JSON.parse(localStorage.getItem('groupHistory') || '[]');
     groupHistory = groupHistory.filter(g => g.Name !== groupName);
     if (isUpMessage) {
       groupHistory.unshift(group);
@@ -43,7 +63,7 @@ function addGroupToHistory(groupName, groupTitle, groupAvatarUrl = '', isUpMessa
 
 function loadGroupsList() {
   try {
-    const groupHistory = JSON.parse(localStorage.getItem("groupHistory") || "[]");
+    const groupHistory = JSON.parse(localStorage.getItem('groupHistory') || '[]');
     const groupsList = groupHistory.length == 0 ? groups : groupHistory;
     const contactList = document.querySelector('.contact-list');
     contactList.innerHTML = '';
@@ -60,7 +80,7 @@ function loadGroupsList() {
         avatar.textContent = '';
       } else {
         avatar.textContent = group.Title ? group.Title[0].toLowerCase() : 'g';
-        avatar.style.backgroundColor = getColorBySeed("salt" + group.Title + group.Name);
+        avatar.style.backgroundColor = getColorBySeed('salt' + group.Title + group.Name);
       }
       info.className = 'contact-info';
       h4.textContent = group.Title || group.Name;
@@ -122,8 +142,8 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
     avatar.style.backgroundImage = `url(${userAvatarUrl})`;
     avatar.textContent = '';
   } else {
-    avatar.textContent = username ? username[0].toUpperCase() : "u";
-    avatar.style.backgroundColor = getColorBySeed("salt" + username + color);
+    avatar.textContent = username ? username[0].toUpperCase() : 'u';
+    avatar.style.backgroundColor = getColorBySeed('salt' + username + color);
   }
   bubble.className = 'bubble';
   nameDiv.className = 'name';
@@ -231,24 +251,31 @@ function renderGroupPage(result) {
 document.getElementById('sendBtn').addEventListener('click', async function (e) {
   if (isSending) { return; }
   isSending = true;
-  const input = document.getElementById('messageInput');
-  const messageText = input.value.trim();
-  const file = document.getElementById('fileInput').files[0];
-  if (!messageText && !file) { 
-    return;
+  try {
+    const input = document.getElementById('messageInput');
+    const messageText = input.value.trim() || '';
+    const file = document.getElementById('fileInput').files[0];
+    if (messageText == '' && !file) {
+      isSending = false;
+      return;
+    }
+    let fileUrl = '';
+    if (file) {
+      fileUrl = await uploadFile(file);
+      document.getElementById('fileInput').value = '';
+    }
+    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl);
+    messagesContainer.appendChild(messageRow);
+    if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    input.value = '';
+    input.style.height = 'auto';
+    input.classList.remove('scrollable');
+    await createMessage(currentGroupName, messageText, currentUserName, currentUserNameColor, currentUserAvatarUrl, fileUrl ? [fileUrl] : []);
+  } catch (ex) {
+    console.log(ex);
   }
-  let fileUrl = '';
-  if (file) {
-    fileUrl = await uploadFile(file);
-    document.getElementById('fileInput').value = '';
-  }
-  const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl);
-  messagesContainer.appendChild(messageRow);
-  if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  }
-  input.value = '';
-  await createMessage(currentGroupName, messageText, currentUserName, currentUserNameColor, currentUserAvatarUrl, fileUrl ? [fileUrl] : []);
   isSending = false;
 });
 
@@ -280,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   currentUserNameColor = localStorage.getItem('color');
   currentUserAvatarUrl = localStorage.getItem('avatar') || '';
   if (currentUserName == '' || currentUserName == undefined) {
-    currentUserNameColor = getColorBySeed("salt" + Math.random());
+    currentUserNameColor = getColorBySeed('salt' + Math.random());
     currentUserName = 'user' + (28 + Math.floor(Math.random() * 50) * 2);
     localStorage.setItem('username', currentUserName);
     localStorage.setItem('color', currentUserNameColor);
@@ -296,7 +323,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     profileIcon.textContent = '';
   } else {
     profileIcon.textContent = currentUserName[0].toUpperCase();
-    profileIcon.style.backgroundColor = getColorBySeed("salt" + currentUserName + currentUserNameColor);
+    profileIcon.style.backgroundColor = getColorBySeed('salt' + currentUserName + currentUserNameColor);
   }
   loadGroupsList();
   const page = (await getCountPage(currentGroupName)).data;
@@ -375,7 +402,7 @@ function openProfileModal() {
   document.getElementById('profileMenu').classList.remove('show');
   document.getElementById('profileUsername').value = currentUserName;
   document.getElementById('profileColor').value = currentUserNameColor;
-  document.getElementById('profileAvatarFileName').textContent = currentUserAvatarUrl ? 'Avatar set' : 'No file chosen';
+  document.getElementById('profileAvatarFileName').textContent = currentUserAvatarUrl ? currentUserAvatarUrl.split('/').pop() : 'No file chosen';
   document.getElementById('profileModal').style.display = 'flex';
 }
 
@@ -413,7 +440,7 @@ async function saveProfile() {
     profileIcon.textContent = '';
   } else {
     profileIcon.textContent = newUsername[0].toUpperCase();
-    profileIcon.style.backgroundColor = getColorBySeed("salt" + currentUserName + currentUserNameColor);
+    profileIcon.style.backgroundColor = getColorBySeed('salt' + currentUserName + currentUserNameColor);
   }
   closeProfileModal();
 }
