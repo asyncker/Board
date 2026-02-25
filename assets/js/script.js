@@ -10,9 +10,41 @@ let isSending = false;
 let cacheGroup = {};
 const messagesContainer = document.getElementById('messages');
 
+function getColorBySeed(seed, minColor = 100, maxColor = 256) {
+  let hash = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+      hash ^= seed.charCodeAt(i);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+  }
+  hash = hash >>> 0;
+  const multColor = maxColor - minColor;
+  const r = (((hash & 0xFF0000) >> 16) / 255) * multColor + minColor;
+  const g = (((hash & 0x00FF00) >> 8) / 255) * multColor + minColor;
+  const b = ((hash & 0x0000FF) / 255) * multColor + minColor;
+  const hex = n => Math.floor(n).toString(16).padStart(2, '0');
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+function addGroupToHistory(groupName, groupTitle, groupAvatarUrl = '', isUpMessage = false) {
+  try {
+    const group = { Name: groupName, Title: groupTitle, AvatarUrl: groupAvatarUrl };
+    let groupHistory = JSON.parse(localStorage.getItem("groupHistory") || "[]");
+    groupHistory = groupHistory.filter(g => g.Name !== groupName);
+    if (isUpMessage) {
+      groupHistory.unshift(group);
+    } else {
+      groupHistory.push(group);
+    }
+    localStorage.setItem('groupHistory', JSON.stringify(groupHistory));
+  } catch (ex) {
+    console.log(ex);
+  }
+}
+
 function loadGroupsList() {
   try {
-    const groupsList = groups;
+    const groupHistory = JSON.parse(localStorage.getItem("groupHistory") || "[]");
+    const groupsList = groupHistory.length == 0 ? groups : groupHistory;
     const contactList = document.querySelector('.contact-list');
     contactList.innerHTML = '';
     groupsList.forEach(group => {
@@ -28,9 +60,11 @@ function loadGroupsList() {
         avatar.textContent = '';
       } else {
         avatar.textContent = group.Title ? group.Title[0].toLowerCase() : 'g';
+        avatar.style.backgroundColor = getColorBySeed("salt" + group.Title + group.Name);
       }
       info.className = 'contact-info';
       h4.textContent = group.Title || group.Name;
+      addGroupToHistory(group.Name, group.Title, group.AvatarUrl);
       info.appendChild(h4);
       li.appendChild(avatar);
       li.appendChild(info);
@@ -89,6 +123,7 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
     avatar.textContent = '';
   } else {
     avatar.textContent = username ? username[0].toUpperCase() : "u";
+    avatar.style.backgroundColor = getColorBySeed("salt" + username + color);
   }
   bubble.className = 'bubble';
   nameDiv.className = 'name';
@@ -134,7 +169,36 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
   if (text) {
     const textDiv = document.createElement('div');
     textDiv.className = 'text';
-    textDiv.textContent = text;
+    function formatTextWithLinksAndBreaks(inputText) {
+      if (!inputText) return document.createTextNode('');
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const parts = inputText.split(urlRegex);
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        const isUrl = i % 2 === 1;
+        if (isUrl) {
+          const link = document.createElement('a');
+          link.href = part;
+          link.textContent = part;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          fragment.appendChild(link);
+        } else if (part) {
+          const lines = part.split('\n');
+          for (let j = 0; j < lines.length; j++) {
+            if (j > 0) {
+              fragment.appendChild(document.createElement('br'));
+            }
+            if (lines[j]) {
+              fragment.appendChild(document.createTextNode(lines[j]));
+            }
+          }
+        }
+      }
+      return fragment;
+    }
+    textDiv.appendChild(formatTextWithLinksAndBreaks(text));
     bubble.appendChild(textDiv);
   }
   messageRow.appendChild(avatar);
@@ -178,26 +242,13 @@ document.getElementById('sendBtn').addEventListener('click', async function (e) 
     fileUrl = await uploadFile(file);
     document.getElementById('fileInput').value = '';
   }
-  const messageRow = addRenderMessage(
-    messageText, 
-    currentUserName, 
-    currentUserNameColor, 
-    fileUrl, 
-    currentUserAvatarUrl
-  );
+  const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl);
   messagesContainer.appendChild(messageRow);
   if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
   input.value = '';
-  await createMessage(
-    currentGroupName, 
-    messageText, 
-    currentUserName, 
-    currentUserNameColor, 
-    currentUserAvatarUrl, 
-    fileUrl ? [fileUrl] : []
-  );
+  await createMessage(currentGroupName, messageText, currentUserName, currentUserNameColor, currentUserAvatarUrl, fileUrl ? [fileUrl] : []);
   isSending = false;
 });
 
@@ -209,32 +260,34 @@ messagesContainer.addEventListener('scroll', async function () {
   if (isLoading == false && this.scrollTop < 5 && currentPage > 0) {
     isLoading = true;
     currentPage -= 1;
+    const oldScrollHeight = this.scrollHeight;
+    const oldScrollTop = this.scrollTop;
     const messagesJson = await getPage(currentGroupName, currentPage);
     renderGroupPage(messagesJson);
-    isLoading = false;
+    setTimeout(() => {
+      const newScrollHeight = this.scrollHeight;
+      this.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight);
+      isLoading = false;
+    }, 10);
   }
 });
 
 document.addEventListener('DOMContentLoaded', async function () {
   const urlParams = new URLSearchParams(window.location.search);
   currentGroupName = urlParams.get('group') || groups[0].Name;
-  currentGroupTitle = groups[0].Title;
+  currentGroupTitle = urlParams.get('group') || groups[0].Title;
   currentUserName = localStorage.getItem('username');
   currentUserNameColor = localStorage.getItem('color');
   currentUserAvatarUrl = localStorage.getItem('avatar') || '';
   if (currentUserName == '' || currentUserName == undefined) {
-    const r = Math.floor(Math.random() * 156) + 100;
-    const g = Math.floor(Math.random() * 156) + 100;
-    const b = Math.floor(Math.random() * 156) + 100;
-    const hex = n => n.toString(16).padStart(2, '0');
-    currentUserNameColor = `#${hex(r)}${hex(g)}${hex(b)}`;
+    currentUserNameColor = getColorBySeed("salt" + Math.random());
     currentUserName = 'user' + (28 + Math.floor(Math.random() * 50) * 2);
     localStorage.setItem('username', currentUserName);
     localStorage.setItem('color', currentUserNameColor);
     localStorage.setItem('avatar', currentUserAvatarUrl);
   }
   document.querySelector('.sidebar-header').textContent = urlParams.get('name') || 'Board';
-  document.getElementById('menuUsername').textContent = currentUserName;
+  document.getElementById('menuUsername').textContent = currentUserName.length > 300 ? currentUserName.substring(0, 300) + '...' : currentUserName;
   document.getElementById('menuUsername').style.color = currentUserNameColor;
   document.getElementById('chatTitle').textContent = currentGroupTitle;
   const profileIcon = document.getElementById('profileIcon');
@@ -243,16 +296,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     profileIcon.textContent = '';
   } else {
     profileIcon.textContent = currentUserName[0].toUpperCase();
+    profileIcon.style.backgroundColor = getColorBySeed("salt" + currentUserName + currentUserNameColor);
   }
   loadGroupsList();
   const page = (await getCountPage(currentGroupName)).data;
   const messagesJson = await getPage(currentGroupName, page);
   if (messagesJson.data) {
-    currentGroupTitle = messagesJson.data[0].title;
-    if (messagesJson.data) {
-      messagesContainer.innerHTML = '';
-      renderGroupPage(messagesJson);
-    }
+    const messagesJsonData = messagesJson.data[0];
+    currentGroupTitle = messagesJsonData.title;
+    messagesContainer.innerHTML = '';
+    renderGroupPage(messagesJson);
+    addGroupToHistory(messagesJsonData.name, messagesJsonData.title, messagesJsonData.avatarUrl, true);
     const messagesStrJson = JSON.stringify(messagesJson);
     if (messagesStrJson.length < 75000) {
       localStorage.setItem(currentGroupName, messagesStrJson);
@@ -349,7 +403,7 @@ async function saveProfile() {
   }
   currentUserName = newUsername;
   currentUserNameColor = newColor;
-  document.getElementById('menuUsername').textContent = newUsername;
+  document.getElementById('menuUsername').textContent = newUsername.length > 300 ? newUsername.substring(0, 300) + '...' : newUsername;
   document.getElementById('menuUsername').style.color = newColor;
   const profileIcon = document.getElementById('profileIcon');
   if (currentUserAvatarUrl) {
@@ -359,6 +413,7 @@ async function saveProfile() {
     profileIcon.textContent = '';
   } else {
     profileIcon.textContent = newUsername[0].toUpperCase();
+    profileIcon.style.backgroundColor = getColorBySeed("salt" + currentUserName + currentUserNameColor);
   }
   closeProfileModal();
 }
