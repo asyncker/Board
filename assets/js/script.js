@@ -6,6 +6,7 @@ let maxPage = 0;
 let currentGroupName = '';
 let currentGroupTitle = '';
 let isLoading = false;
+let isSending = false;
 let cacheGroup = {};
 const messagesContainer = document.getElementById('messages');
 
@@ -96,11 +97,39 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
   bubble.appendChild(nameDiv);
   if (fileurl && fileurl.length >= 5) {
     const viewContent = document.createElement('div');
-    const contentDiv = document.createElement('img');
-    contentDiv.src = fileurl;
     viewContent.className = 'view-content';
-    viewContent.appendChild(contentDiv);
-    bubble.append(viewContent);
+    if (fileurl.match(/\.(mp4|mov|webm|ogg)$/i)) {
+      const video = document.createElement('video');
+      video.src = fileurl;
+      video.controls = true;
+      viewContent.appendChild(video);
+    } else if (fileurl.match(/\.(mp3|opus|wav|m4a|aac)$/i)) {
+      const audio = document.createElement('audio');
+      audio.src = fileurl;
+      audio.controls = true;
+      viewContent.appendChild(audio);
+    } else if (fileurl.match(/\.(jpg|png|jpeg|gif)$/i)) {
+      const img = document.createElement('img');
+      img.src = fileurl;
+      viewContent.appendChild(img);
+    } else {
+      const downloadBtn = document.createElement('a');
+      downloadBtn.href = fileurl;
+      downloadBtn.download = '';
+      downloadBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
+      downloadBtn.style.background = 'rgba(0,0,0,0.5)';
+      downloadBtn.style.borderRadius = '50%';
+      downloadBtn.style.width = '32px';
+      downloadBtn.style.height = '32px';
+      downloadBtn.style.display = 'flex';
+      downloadBtn.style.alignItems = 'center';
+      downloadBtn.style.justifyContent = 'center';
+      downloadBtn.style.cursor = 'pointer';
+      downloadBtn.style.backdropFilter = 'blur(4px)';
+      downloadBtn.target = '_blank';
+      viewContent.appendChild(downloadBtn);
+    }
+    bubble.appendChild(viewContent);
   }
   if (text) {
     const textDiv = document.createElement('div');
@@ -113,7 +142,7 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
   return messageRow;
 }
 
-async function renderGroupPage(result) {
+function renderGroupPage(result) {
   if (result == undefined || result.data == undefined) { return; }
   const data = result.data[0];
   const groupName = data.name;
@@ -129,24 +158,51 @@ async function renderGroupPage(result) {
     const userAvatarUrl = message.userAvatarUrl;
     const username = message.userName || 'null';
     const usernameColor = message.userNameColor || '#000000';
-    const attachments = message.attachments;
-    const messageRow = addRenderMessage(text, username, usernameColor, attachments[0], userAvatarUrl);
+    const attachment = message.attachments?.[0];
+    const messageRow = addRenderMessage(text, username, usernameColor, attachment, userAvatarUrl);
     messagesContainer.insertBefore(messageRow, messagesContainer.firstChild);
   }
 }
 
-document.getElementById('sendBtn').addEventListener('click', async function () {
+document.getElementById('sendBtn').addEventListener('click', async function (e) {
+  if (isSending) { return; }
+  isSending = true;
   const input = document.getElementById('messageInput');
   const messageText = input.value.trim();
-  if (messageText) {
-    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, '', currentUserAvatarUrl);
-    messagesContainer.appendChild(messageRow);
-    if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-    input.value = '';
-    await createMessage(currentGroupName, messageText, currentUserName, currentUserNameColor, currentUserAvatarUrl, []);
+  const file = document.getElementById('fileInput').files[0];
+  if (!messageText && !file) { 
+    return;
   }
+  let fileUrl = '';
+  if (file) {
+    fileUrl = await uploadFile(file);
+    document.getElementById('fileInput').value = '';
+  }
+  const messageRow = addRenderMessage(
+    messageText, 
+    currentUserName, 
+    currentUserNameColor, 
+    fileUrl, 
+    currentUserAvatarUrl
+  );
+  messagesContainer.appendChild(messageRow);
+  if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+  input.value = '';
+  await createMessage(
+    currentGroupName, 
+    messageText, 
+    currentUserName, 
+    currentUserNameColor, 
+    currentUserAvatarUrl, 
+    fileUrl ? [fileUrl] : []
+  );
+  isSending = false;
+});
+
+document.getElementById('attachBtn').addEventListener('click', function (e) {
+  document.getElementById('fileInput').click();
 });
 
 messagesContainer.addEventListener('scroll', async function () {
@@ -163,18 +219,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   const urlParams = new URLSearchParams(window.location.search);
   currentGroupName = urlParams.get('group') || groups[0].Name;
   currentGroupTitle = groups[0].Title;
-  const currentGroup = groups.find(g => g.Name === currentGroupName);
-  if (currentGroup?.AvatarUrl) {
-    const profileIcon = document.getElementById('profileIcon');
-    profileIcon.style.backgroundImage = `url(${currentGroup.AvatarUrl})`;
-    profileIcon.style.backgroundSize = 'cover';
-    profileIcon.style.backgroundPosition = 'center';
-    profileIcon.textContent = '';
-  }
-  const cacheData = localStorage.getItem(currentGroupName);
-  if (cacheData) {
-    renderGroupPage(JSON.parse(cacheData));
-  }
   currentUserName = localStorage.getItem('username');
   currentUserNameColor = localStorage.getItem('color');
   currentUserAvatarUrl = localStorage.getItem('avatar') || '';
@@ -192,16 +236,14 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.querySelector('.sidebar-header').textContent = urlParams.get('name') || 'Board';
   document.getElementById('menuUsername').textContent = currentUserName;
   document.getElementById('menuUsername').style.color = currentUserNameColor;
+  document.getElementById('chatTitle').textContent = currentGroupTitle;
   const profileIcon = document.getElementById('profileIcon');
   if (currentUserAvatarUrl) {
     profileIcon.style.backgroundImage = `url(${currentUserAvatarUrl})`;
-    profileIcon.style.backgroundSize = 'cover';
-    profileIcon.style.backgroundPosition = 'center';
     profileIcon.textContent = '';
   } else {
     profileIcon.textContent = currentUserName[0].toUpperCase();
   }
-  document.getElementById('chatTitle').textContent = currentGroupTitle;
   loadGroupsList();
   const page = (await getCountPage(currentGroupName)).data;
   const messagesJson = await getPage(currentGroupName, page);

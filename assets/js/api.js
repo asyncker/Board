@@ -1,4 +1,4 @@
-const gatewayUrls = [ 'https://gateway-board.vercel.app' ];
+const gatewayUrls = [ 'https://gateway.asyncker.workers.dev', 'https://gateway-board.vercel.app' ];
 const storageUploadUrls = [ 'https://peerphp.vercel.app/peer/upload' ];
 const gatewayUrl = gatewayUrls[0];
 
