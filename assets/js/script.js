@@ -22,7 +22,12 @@ function loadGroupsList() {
       li.className = 'contact-item';
       li.dataset.name = group.Name;
       avatar.className = 'contact-avatar';
-      avatar.textContent = group.Title ? group.Title[0].toLowerCase() : 'g';
+      if (group.AvatarUrl) {
+        avatar.style.backgroundImage = `url(${group.AvatarUrl})`;
+        avatar.textContent = '';
+      } else {
+        avatar.textContent = group.Title ? group.Title[0].toLowerCase() : 'g';
+      }
       info.className = 'contact-info';
       h4.textContent = group.Title || group.Name;
       info.appendChild(h4);
@@ -70,7 +75,7 @@ function loadGroupsList() {
   } catch (error) {}
 }
 
-function addRenderMessage(text, username, color, fileurl) {
+function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
   const messageRow = document.createElement('div');
   const avatar = document.createElement('div');
   const bubble = document.createElement('div');
@@ -78,7 +83,12 @@ function addRenderMessage(text, username, color, fileurl) {
   const isMyMessage = currentUserName == username && currentUserNameColor == color;
   messageRow.className = 'message-row' + (isMyMessage ? ' me' : '');
   avatar.className = 'avatar-small';
-  avatar.textContent = username[0];
+  if (userAvatarUrl) {
+    avatar.style.backgroundImage = `url(${userAvatarUrl})`;
+    avatar.textContent = '';
+  } else {
+    avatar.textContent = username ? username[0].toUpperCase() : "u";
+  }
   bubble.className = 'bubble';
   nameDiv.className = 'name';
   nameDiv.style.color = '#' + color.replace('#', '');
@@ -120,7 +130,7 @@ async function renderGroupPage(result) {
     const username = message.userName || 'null';
     const usernameColor = message.userNameColor || '#000000';
     const attachments = message.attachments;
-    const messageRow = addRenderMessage(text, username, usernameColor, attachments[0]);
+    const messageRow = addRenderMessage(text, username, usernameColor, attachments[0], userAvatarUrl);
     messagesContainer.insertBefore(messageRow, messagesContainer.firstChild);
   }
 }
@@ -129,7 +139,7 @@ document.getElementById('sendBtn').addEventListener('click', async function () {
   const input = document.getElementById('messageInput');
   const messageText = input.value.trim();
   if (messageText) {
-    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, '');
+    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, '', currentUserAvatarUrl);
     messagesContainer.appendChild(messageRow);
     if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -153,6 +163,14 @@ document.addEventListener('DOMContentLoaded', async function () {
   const urlParams = new URLSearchParams(window.location.search);
   currentGroupName = urlParams.get('group') || groups[0].Name;
   currentGroupTitle = groups[0].Title;
+  const currentGroup = groups.find(g => g.Name === currentGroupName);
+  if (currentGroup?.AvatarUrl) {
+    const profileIcon = document.getElementById('profileIcon');
+    profileIcon.style.backgroundImage = `url(${currentGroup.AvatarUrl})`;
+    profileIcon.style.backgroundSize = 'cover';
+    profileIcon.style.backgroundPosition = 'center';
+    profileIcon.textContent = '';
+  }
   const cacheData = localStorage.getItem(currentGroupName);
   if (cacheData) {
     renderGroupPage(JSON.parse(cacheData));
@@ -174,7 +192,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.querySelector('.sidebar-header').textContent = urlParams.get('name') || 'Board';
   document.getElementById('menuUsername').textContent = currentUserName;
   document.getElementById('menuUsername').style.color = currentUserNameColor;
-  document.getElementById('profileIcon').textContent = currentUserName[0];
+  const profileIcon = document.getElementById('profileIcon');
+  if (currentUserAvatarUrl) {
+    profileIcon.style.backgroundImage = `url(${currentUserAvatarUrl})`;
+    profileIcon.style.backgroundSize = 'cover';
+    profileIcon.style.backgroundPosition = 'center';
+    profileIcon.textContent = '';
+  } else {
+    profileIcon.textContent = currentUserName[0].toUpperCase();
+  }
   document.getElementById('chatTitle').textContent = currentGroupTitle;
   loadGroupsList();
   const page = (await getCountPage(currentGroupName)).data;
@@ -276,14 +302,22 @@ async function saveProfile() {
   localStorage.setItem('username', newUsername);
   localStorage.setItem('color', newColor);
   if (file) {
-    const avatarUrl = await uploadFile(file);
-    localStorage.setItem('avatar', avatarUrl);
+    currentUserAvatarUrl = await uploadFile(file);
+    localStorage.setItem('avatar', currentUserAvatarUrl);
   }
   currentUserName = newUsername;
   currentUserNameColor = newColor;
   document.getElementById('menuUsername').textContent = newUsername;
   document.getElementById('menuUsername').style.color = newColor;
-  document.getElementById('profileIcon').textContent = newUsername[0].toUpperCase();
+  const profileIcon = document.getElementById('profileIcon');
+  if (currentUserAvatarUrl) {
+    profileIcon.style.backgroundImage = `url(${currentUserAvatarUrl})`;
+    profileIcon.style.backgroundSize = 'cover';
+    profileIcon.style.backgroundPosition = 'center';
+    profileIcon.textContent = '';
+  } else {
+    profileIcon.textContent = newUsername[0].toUpperCase();
+  }
   closeProfileModal();
 }
 

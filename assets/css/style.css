@@ -438,3 +438,15 @@ textarea.modal-input {
     padding: 14px 12px;
   }
 }
+
+.contact-avatar[style*="background-image"],
+.avatar-small[style*="background-image"] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.contact-item.selected {
+  background: var(--accent);
+  opacity: 0.9;
+}
