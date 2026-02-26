@@ -72,5 +72,4 @@ async function uploadFile(file) {
   } catch (error) {
     return '';
   }
-
 }

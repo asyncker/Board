@@ -218,7 +218,45 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
       }
       return fragment;
     }
-    textDiv.appendChild(formatTextWithLinksAndBreaks(text));
+    const MAX_LENGTH = 1000;
+    const isLongText = text.length > MAX_LENGTH;
+    if (isLongText) {
+      const shortTextContainer = document.createElement('div');
+      shortTextContainer.className = 'short-text';
+      let shortText = text.substring(0, MAX_LENGTH);
+      const lastSpace = shortText.lastIndexOf(' ');
+      if (lastSpace > MAX_LENGTH * 0.8) {
+        shortText = shortText.substring(0, lastSpace);
+      }
+      shortText += '... ';
+      const readAllLink = document.createElement('a');
+      readAllLink.href = '#';
+      readAllLink.className = 'read-all-link';
+      readAllLink.textContent = 'Read all';
+      readAllLink.style.color = '#0066cc';
+      readAllLink.style.cursor = 'pointer';
+      readAllLink.style.textDecoration = 'underline';
+      readAllLink.style.marginLeft = '4px';
+      const shortTextFragment = formatTextWithLinksAndBreaks(shortText);
+      shortTextContainer.appendChild(shortTextFragment);
+      const fullTextContainer = document.createElement('div');
+      fullTextContainer.className = 'full-text';
+      fullTextContainer.style.display = 'none';
+      const fullTextFragment = formatTextWithLinksAndBreaks(text);
+      fullTextContainer.appendChild(fullTextFragment);
+      readAllLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        shortTextContainer.style.display = 'none';
+        fullTextContainer.style.display = 'block';
+        readAllLink.style.display = 'none';
+      });
+      textDiv.appendChild(shortTextContainer);
+      textDiv.appendChild(fullTextContainer);
+      textDiv.appendChild(readAllLink);
+    } else {
+      const textFragment = formatTextWithLinksAndBreaks(text);
+      textDiv.appendChild(textFragment);
+    }
     bubble.appendChild(textDiv);
   }
   messageRow.appendChild(avatar);
@@ -419,7 +457,8 @@ async function saveProfile() {
     alert('username length must less than ' + usernameMaxLength);
     return;
   }
-  if (!newUsername || !/^#[0-9A-F]{6}$/i.test(newColor)) {
+  if (!newUsername || !/^#[0-9A-F]{1,6}$/i.test(newColor)) {
+    alert('You have wrong color hex! Check color hex format like: #00ff00');
     return;
   }
   localStorage.setItem('username', newUsername);
