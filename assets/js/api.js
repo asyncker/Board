@@ -1,4 +1,4 @@
-const gatewayUrls = [ 'https://gateway.asyncker.workers.dev', 'https://gateway-board.vercel.app' ];
+const gatewayUrls = [ 'https://gateway-board.vercel.app', 'https://gateway.asyncker.workers.dev' ];
 const storageUploadUrls = [ 'https://peerphp.vercel.app/peer/upload' ];
 const gatewayUrl = gatewayUrls[0];
 
@@ -72,4 +72,5 @@ async function uploadFile(file) {
   } catch (error) {
     return '';
   }
+
 }
