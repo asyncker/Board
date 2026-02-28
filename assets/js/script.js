@@ -1,6 +1,7 @@
 let currentUserName = '';
 let currentUserNameColor = '';
 let currentUserAvatarUrl = '';
+let currentLocale = '';
 let currentPage = 0;
 let maxPage = 0;
 let currentGroupName = '';
@@ -64,7 +65,7 @@ function addGroupToHistory(groupName, groupTitle, groupAvatarUrl = '', isUpMessa
 function loadGroupsList() {
   try {
     const groupHistory = JSON.parse(localStorage.getItem('groupHistory') || '[]');
-    const groupsList = groupHistory.length == 0 ? groups : groupHistory;
+    const groupsList = groupHistory.length == 0 ? (currentLocale == "en" ? groupsEng : groups) : groupHistory;
     const contactList = document.querySelector('.contact-list');
     contactList.innerHTML = '';
     groupsList.forEach(group => {
@@ -339,14 +340,22 @@ messagesContainer.addEventListener('scroll', async function () {
 
 document.addEventListener('DOMContentLoaded', async function () {
   const urlParams = new URLSearchParams(window.location.search);
-  currentGroupName = urlParams.get('group') || groups[0].Name;
-  currentGroupTitle = urlParams.get('group') || groups[0].Title;
+  currentLocale = urlParams.get('locale') || 'ru';
+  let startGroup = currentLocale == 'en' ? groupsEng[0] : groups[0];
+  currentGroupName = urlParams.get('group') || startGroup.Name;
+  currentGroupTitle = urlParams.get('group') || startGroup.Title;
   currentUserName = localStorage.getItem('username');
   currentUserNameColor = localStorage.getItem('color');
   currentUserAvatarUrl = localStorage.getItem('avatar') || '';
   if (currentUserName == '' || currentUserName == undefined) {
     currentUserNameColor = getColorBySeed('salt' + Math.random());
-    currentUserName = 'user' + (28 + Math.floor(Math.random() * 50) * 2);
+    currentUserName = urlParams.get('username');
+    if (currentUserName == '' || currentUserName == undefined) {
+      currentUserName = 'user' + (28 + Math.floor(Math.random() * 50) * 2);
+    } else {
+      urlParams.delete('username');
+      window.history.replaceState(null, '', window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '') + window.location.hash);
+    }
     localStorage.setItem('username', currentUserName);
     localStorage.setItem('color', currentUserNameColor);
     localStorage.setItem('avatar', currentUserAvatarUrl);
