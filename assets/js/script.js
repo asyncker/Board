@@ -31,6 +31,25 @@ messageInput.addEventListener('keydown', function(e) {
 
 messageInput.addEventListener('input', autoResizeTextarea);
 
+function isSngTimezone() {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const sngTimezones = [
+        'Europe/Moscow', 'Europe/Samara', 'Europe/Volgograd', 'Europe/Astrakhan',
+        'Europe/Ulyanovsk', 'Europe/Saratov', 'Europe/Kirov', 'Asia/Yekaterinburg', 
+        'Asia/Omsk', 'Asia/Krasnoyarsk', 'Asia/Irkutsk', 'Asia/Yakutsk', 
+        'Asia/Vladivostok', 'Asia/Sakhalin', 'Asia/Kamchatka', 'Asia/Novosibirsk', 
+        'Asia/Tomsk', 'Asia/Novokuznetsk', 'Asia/Barnaul', 'Asia/Chita', 
+        'Asia/Khandyga', 'Asia/Manchzhuria', 'Asia/Ust-Nera', 'Asia/Srednekolymsk',
+        'Asia/Anadyr', 'Europe/Kaliningrad', 'Europe/Simferopol', 'Europe/Minsk',
+        'Europe/Kiev', 'Europe/Uzhgorod', 'Europe/Zaporozhye', 'Europe/Simferopol',
+        'Asia/Yerevan', 'Asia/Almaty', 'Asia/Aqtau', 'Asia/Aqtobe', 'Asia/Atyrau', 
+        'Asia/Oral', 'Asia/Qostanay', 'Asia/Qyzylorda', 'Asia/Samarkand', 'Asia/Tashkent',
+        'Asia/Baku', 'Asia/Bishkek', 'Asia/Dushanbe', 'Asia/Ashgabat', 'Europe/Chisinau',
+        'Asia/Tbilisi'
+    ];
+    return sngTimezones.includes(timezone);
+}
+
 function getColorBySeed(seed, minColor = 100, maxColor = 256) {
   let hash = 2166136261;
   for (let i = 0; i < seed.length; i++) {
@@ -65,7 +84,8 @@ function addGroupToHistory(groupName, groupTitle, groupAvatarUrl = '', isUpMessa
 function loadGroupsList() {
   try {
     const groupHistory = JSON.parse(localStorage.getItem('groupHistory') || '[]');
-    const groupsList = groupHistory.length == 0 ? (currentLocale == "en" ? groupsEng : groups) : groupHistory;
+    const groupHistoryList = isSngTimezone() ? groups : groupsEng;
+    const groupsList = groupHistory.length == 0 ? (currentLocale == "en" ? groupsEng : groupHistoryList) : groupHistory;
     const contactList = document.querySelector('.contact-list');
     contactList.innerHTML = '';
     groupsList.forEach(group => {
@@ -341,7 +361,7 @@ messagesContainer.addEventListener('scroll', async function () {
 document.addEventListener('DOMContentLoaded', async function () {
   const urlParams = new URLSearchParams(window.location.search);
   currentLocale = urlParams.get('locale') || 'ru';
-  let startGroup = currentLocale == 'en' ? groupsEng[0] : groups[0];
+  let startGroup = isSngTimezone() ? groups[0] : groupsEng[0];
   currentGroupName = urlParams.get('group') || startGroup.Name;
   currentGroupTitle = urlParams.get('group') || startGroup.Title;
   currentUserName = localStorage.getItem('username');
