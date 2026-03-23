@@ -71,7 +71,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 9px 16px;
+  padding: 8.75px 16px;
   border-bottom: 1px solid var(--bg-secondary);
   cursor: pointer;
   background: var(--bg-primary);
@@ -213,10 +213,6 @@ body {
   border-color: var(--accent);
 }
 
-.message-input:focus {
-  border-color: var(--accent);
-}
-
 .contact-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -249,7 +245,7 @@ body {
 }
 
 .send-btn:hover {
-  background: var(--accent);
+  background: var(--accent-hover);
 }
 
 .avatar-small {
@@ -419,7 +415,7 @@ body {
 }
 
 .modal-file-label:hover {
-  background: var(--accent);
+  background: var(--accent-hover);
 }
 
 .modal-file-name {
@@ -460,7 +456,7 @@ body {
 }
 
 .modal-btn-create:hover {
-  background: var(--accent);
+  background: var(--accent-hover);
 }
 
 textarea.modal-input {
@@ -507,6 +503,20 @@ textarea.modal-input {
 
 .view-content audio {
   width: 300px;
+}
+
+.bubble .name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.message-date {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #8a9aa8;
+  margin-left: auto;
 }
 
 @media (max-width: 730px) {

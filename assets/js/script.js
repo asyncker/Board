@@ -30,6 +30,21 @@ messageInput.addEventListener('keydown', function(e) {
 
 messageInput.addEventListener('input', autoResizeTextarea);
 
+function formatMessageDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (messageDate.getTime() === today.getTime()) {
+    return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } else if (messageDate.getTime() === yesterday.getTime()) {
+    return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+  return date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 function getColorBySeed(seed, minColor = 100, maxColor = 256) {
   let hash = 2166136261;
   for (let i = 0; i < seed.length; i++) {
@@ -68,73 +83,73 @@ function loadGroupsList() {
     const contactList = document.querySelector('.contact-list');
     contactList.innerHTML = '';
     groupsList.forEach(group => {
-      const li = document.createElement('li');
-      const avatar = document.createElement('div');
-      const info = document.createElement('div');
-      const h4 = document.createElement('h4');
-      li.className = 'contact-item';
-      li.dataset.name = group.Name;
-      avatar.className = 'contact-avatar';
-      if (group.AvatarUrl) {
-        avatar.style.backgroundImage = `url(${group.AvatarUrl})`;
-        avatar.textContent = '';
-      } else {
-        avatar.textContent = group.Title ? group.Title[0].toLowerCase() : 'g';
-        avatar.style.backgroundColor = getColorBySeed('salt' + group.Title + group.Name);
-      }
-      info.className = 'contact-info';
-      h4.textContent = group.Title || group.Name;
-      addGroupToHistory(group.Name, group.Title, group.AvatarUrl);
-      info.appendChild(h4);
-      li.appendChild(avatar);
-      li.appendChild(info);
-      let taskId = 0;
+  const li = document.createElement('li');
+  const avatar = document.createElement('div');
+  const info = document.createElement('div');
+  const h4 = document.createElement('h4');
+  li.className = 'contact-item';
+  li.dataset.name = group.Name;
+  avatar.className = 'contact-avatar';
+  if (group.AvatarUrl) {
+    avatar.style.backgroundImage = `url(${group.AvatarUrl})`;
+    avatar.textContent = '';
+  } else {
+    avatar.textContent = group.Title ? group.Title[0].toLowerCase() : 'g';
+    avatar.style.backgroundColor = getColorBySeed('salt' + group.Title + group.Name);
+  }
+  info.className = 'contact-info';
+  h4.textContent = group.Title || group.Name;
+  info.appendChild(h4);
+  li.appendChild(avatar);
+  li.appendChild(info);
+  let taskId = 0;
       li.addEventListener('click', async function() {
         if (isLoading == false) {
-          const nowTaskId = Math.floor(Math.random() * 100000);
+  const nowTaskId = Math.floor(Math.random() * 100000);
           taskId = nowTaskId;
-          document.querySelectorAll('.contact-item').forEach(i => { i.classList.remove('selected'); });
+  document.querySelectorAll('.contact-item').forEach(i => { i.classList.remove('selected'); });
           this.classList.add('selected');
           currentGroupName = this.dataset.name;
-          const url = new URL(window.location);
-          url.searchParams.set('group', currentGroupName);
-          window.history.pushState({}, '', url);
+  const url = new URL(window.location);
+  url.searchParams.set('group', currentGroupName);
+  window.history.pushState({}, '', url);
           currentGroupTitle = this.querySelector('h4').textContent;
-          let result = cacheGroup[currentGroupName];
+  let result = cacheGroup[currentGroupName];
           if (taskId == nowTaskId) {
-            document.getElementById('chatTitle').textContent = currentGroupTitle;
-            messagesContainer.innerHTML = '';
-            renderGroupPage(result);
-            currentPage = (await getCountPage(currentGroupName)).data;
-          }
+    document.getElementById('chatTitle').textContent = currentGroupTitle;
+    messagesContainer.innerHTML = '';
+    renderGroupPage(result);
+    currentPage = (await getCountPage(currentGroupName)).data;
+  }
           if (taskId == nowTaskId) {
-            result = await getPage(currentGroupName, currentPage);
-            cacheGroup[currentGroupName] = result;
-          }
+    result = await getPage(currentGroupName, currentPage);
+    cacheGroup[currentGroupName] = result;
+  }
           if (taskId == nowTaskId && currentGroupName == this.dataset.name) {
-            if (result.data) {
-              messagesContainer.innerHTML = '';
-              renderGroupPage(result);
-            } else {
-              currentGroupTitle = 'Not found';
-              openGroupModal(currentGroupName, true);
-              document.getElementById('chatTitle').textContent = currentGroupTitle;
-            }
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            setTimeout(() => { messagesContainer.scrollTop = messagesContainer.scrollHeight; }, 350);
-          }
-        }
+    if (result.data) {
+      messagesContainer.innerHTML = '';
+      renderGroupPage(result);
+    } else {
+      currentGroupTitle = 'Not found';
+      openGroupModal(currentGroupName, true);
+      document.getElementById('chatTitle').textContent = currentGroupTitle;
+    }
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    setTimeout(() => { messagesContainer.scrollTop = messagesContainer.scrollHeight; }, 350);
+  }
+}
       });
       contactList.appendChild(li);
     });
   } catch (error) {}
 }
 
-function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
+function addRenderMessage(text, username, color, fileurl, userAvatarUrl, createdUtcAt = null) {
   const messageRow = document.createElement('div');
   const avatar = document.createElement('div');
   const bubble = document.createElement('div');
   const nameDiv = document.createElement('div');
+  const dateDiv = document.createElement('div');
   const isMyMessage = currentUserName == username && currentUserNameColor == color;
   messageRow.className = 'message-row' + (isMyMessage ? ' me' : '');
   avatar.className = 'avatar-small';
@@ -149,6 +164,11 @@ function addRenderMessage(text, username, color, fileurl, userAvatarUrl) {
   nameDiv.className = 'name';
   nameDiv.style.color = '#' + color.replace('#', '');
   nameDiv.textContent = username;
+  if (createdUtcAt) {
+    dateDiv.className = 'message-date';
+    dateDiv.textContent = formatMessageDate(createdUtcAt);
+    nameDiv.appendChild(dateDiv);
+  }
   bubble.appendChild(nameDiv);
   if (fileurl && fileurl.length >= 5) {
     const viewContent = document.createElement('div');
@@ -281,7 +301,7 @@ function renderGroupPage(result) {
     const username = message.userName || 'null';
     const usernameColor = message.userNameColor || '#000000';
     const attachment = message.attachments?.[0];
-    const messageRow = addRenderMessage(text, username, usernameColor, attachment, userAvatarUrl);
+    const messageRow = addRenderMessage(text, username, usernameColor, attachment, userAvatarUrl, created);
     messagesContainer.insertBefore(messageRow, messagesContainer.firstChild);
   }
 }
@@ -302,7 +322,7 @@ document.getElementById('sendBtn').addEventListener('click', async function (e) 
       fileUrl = await uploadFile(file);
       document.getElementById('fileInput').value = '';
     }
-    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl);
+    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl, new Date().toISOString());
     messagesContainer.appendChild(messageRow);
     if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
