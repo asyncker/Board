@@ -302,7 +302,7 @@ function renderGroupPage(result) {
     const username = message.userName || 'null';
     const usernameColor = message.userNameColor || '#000000';
     const attachment = message.attachments?.[0];
-    const messageRow = addRenderMessage(text, username, usernameColor, attachment, userAvatarUrl);
+    const messageRow = addRenderMessage(text, username, usernameColor, attachment, userAvatarUrl, created);
     messagesContainer.insertBefore(messageRow, messagesContainer.firstChild);
   }
 }
@@ -323,7 +323,7 @@ document.getElementById('sendBtn').addEventListener('click', async function (e) 
       fileUrl = await uploadFile(file);
       document.getElementById('fileInput').value = '';
     }
-    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl);
+    const messageRow = addRenderMessage(messageText, currentUserName, currentUserNameColor, fileUrl, currentUserAvatarUrl, new Date().toISOString());
     messagesContainer.appendChild(messageRow);
     if (messagesContainer.scrollTop > messagesContainer.clientHeight) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
