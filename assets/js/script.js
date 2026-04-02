@@ -345,7 +345,6 @@ document.getElementById('attachBtn').addEventListener('click', function (e) {
 async function loadMoreMessagesIfNeeded() {
   const currentMessageCount = messagesContainer.children.length;
   if (currentMessageCount < 15 && currentPage > 0) {
-    isLoading = true;
     currentPage -= 1;
     const messagesJson = await getPage(currentGroupName, currentPage);
     renderGroupPage(messagesJson);
