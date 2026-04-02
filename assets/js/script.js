@@ -342,6 +342,16 @@ document.getElementById('attachBtn').addEventListener('click', function (e) {
   document.getElementById('fileInput').click();
 });
 
+async function loadMoreMessagesIfNeeded() {
+  const currentMessageCount = messagesContainer.children.length;
+  if (currentMessageCount < 15 && currentPage > 0) {
+    isLoading = true;
+    currentPage -= 1;
+    const messagesJson = await getPage(currentGroupName, currentPage);
+    renderGroupPage(messagesJson);
+  }
+}
+
 messagesContainer.addEventListener('scroll', async function () {
   if (isLoading == false && this.scrollTop < 5 && currentPage > 0) {
     isLoading = true;
@@ -410,8 +420,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     openGroupModal(currentGroupName, true);
   }
   document.getElementById('chatTitle').textContent = currentGroupTitle;
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
   currentPage = page;
+  await loadMoreMessagesIfNeeded();
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
 });
 
 function openGroupModal(groupName = '', groupInputDisabled = false) {
