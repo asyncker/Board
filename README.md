@@ -61,3 +61,5 @@ flowchart LR
 - **CI/CD** - автоматизация процессов сборки и тестирования при каждом push/merge в master с использованием GitHub Actions
 - **Переменные окружения** - конфигурация подключений к БД, Kafka, Elasticsearch, ZooKeeper и портов через environment variables
   
+<br />Результат такой сайт:<br />
+https://peer1.liveblog365.com
