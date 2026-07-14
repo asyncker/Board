@@ -1,0 +1,396 @@
+.posts-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 100%;
+  background-size: cover;
+  background-position: center;
+  color: #000;
+}
+
+.posts-description {
+  font-size: 15px;
+  color: #b0b3b8;
+  max-width: 95%;
+}
+
+.posts-feed {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+}
+
+.posts-header {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #222;
+}
+
+.posts-header-padding {
+  padding: 24px 24px 24px 24px;
+}
+
+.posts-text {
+  flex: 1;
+  padding-left: 30px;
+}
+
+.posts-name {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  color: #ffffff;
+  word-break: break-word;
+}
+
+.posts-stats {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #71767b;
+}
+
+.posts-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.posts-action-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 6px 4px;
+  border-radius: 40px;
+  font-weight: 550;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #b0b3b8;
+  backdrop-filter: blur(4px);
+}
+
+.posts-action-pill svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  fill: none;
+  transition: all 0.2s;
+}
+
+.post-item {
+  padding: 12px 16px;
+  display: flex;
+  gap: 14px;
+  max-width: 85%;
+}
+
+.post-main {
+  flex: 1;
+}
+
+.post-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 22px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 4px;
+  background: #b0b3b8; /*b3e31c*/
+}
+
+.post-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.post-username {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.post-date {
+  color: #71767b;
+  font-size: 12px;
+}
+
+.post-content {
+  font-size: 15px;
+  margin: 4px 0 10px 0;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.post-stats {
+  display: flex;
+  gap: 28px;
+  color: #71767b;
+  font-size: 13px;
+}
+
+.post-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.post-stat-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.post-stat-count {
+  font-weight: 500;
+}
+
+.input-area {
+  position: sticky;
+  bottom: 0;
+  background: #000;
+  border-top: 1px solid #222;
+  padding: 0px 12px 12px 16px;
+}
+
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  /*border-radius: 24px;
+  background: #0c0c0e;
+  padding: 6px 10px 6px 16px;
+  border: 1px solid #222;*/
+}
+
+.input-textarea-wrapper {
+  flex: 1;
+  display: flex;
+}
+
+.input-textarea-dynamic {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #efeff1;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.input-attach-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  color: #8e8e93;
+  border-radius: 40px;
+}
+
+.input-send-btn {
+  background: #0055aa;
+  border: none;
+  border-radius: 32px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.input-send-btn svg {
+  stroke: #fff;
+}
+
+.input-attachments-preview-area {
+  margin-bottom: 5px;
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.post-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.post-media-content {
+  max-width: 60%;
+  border-radius: 12px;
+  cursor: pointer;
+  max-height: 62vh;
+}
+
+.attach-preview-item {
+  position: relative;
+  display: inline-block;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1e;
+  border: 1px solid #333;
+}
+
+.attach-preview-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+
+.attach-preview-video {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.attach-preview-file {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e1e24;
+  color: #aaa;
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+  padding: 5px;
+}
+
+.attach-remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 14px;
+  backdrop-filter: blur(4px);
+}
+
+.attach-remove-btn:hover {
+  background: rgba(17, 131, 9, 0.8);
+}
+
+.post-audio-player {
+  width: 50%;
+  height: 40px;
+  outline: none;
+}
+
+
+
+.thread-post {
+  padding: 20px 24px;
+  display: flex;
+  gap: 16px;
+}
+
+.thread-post-container {
+  border-bottom: 1px solid #222;
+  background: #000;
+  margin-bottom: 6px;
+}
+
+.thread-post-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.thread-post-username {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.thread-post-text {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.thread-post-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  background: #b0b3b8;
+}
+
+@media (max-width: 1400px) {
+  .post-media-content {
+    max-width: 75%;
+  }
+}
+@media (max-width: 730px) {
+  .thread-post {
+    padding: 16px;
+  }
+  .posts-icon {
+    width: 80px;
+    height: 80px;
+  }
+  .post-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+  .post-item {
+    max-width: 99%;
+    padding: 12px 14px;
+  }
+  .post-media-content {
+    max-width: 97%;
+    max-height: 100vh;
+  }
+  .post-audio-player {
+    width: 98%;
+    height: 36px;
+  }
+  .input-area {
+    padding: 0px 12px 10px 16px;
+  }
+  .main-content.blurred {
+    filter: blur(4px);
+    user-select: none;
+  }
+}
